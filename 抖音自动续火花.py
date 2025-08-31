@@ -33,7 +33,7 @@ my_user = '@qq.com'  # 收件人邮箱账号
 
 
 
-service = Service(executable_path=r'C:\WebDriver\edge\msedgedriver.exe') #路径为WebDriver路径!
+service = Service(executable_path=r'C:\WebDriver\edge\msedgedriver.exe')
 options = webdriver.EdgeOptions()
 # 防封策略 勿动
 def unban_config():
@@ -187,7 +187,7 @@ def Email_Send(ERROR_TEXT : str):
 def Get_Cooke():
     driver.get('https://www.douyin.com/')
     for_OFF = True
-    print('🕰️ 请登录抖音.....')
+    print('🕰️ 请登录抖音[且保持游览器为全屏!].....')
     while for_OFF:
         try:
             # 尝试获取 login_type 元素
@@ -216,7 +216,7 @@ try:
         driver.quit()
         exit()
     except NoSuchElementException:
-        print('✅ Cooke有效,登录成功!')
+        print('✅ Cooke有效,登录成功! [请勿操作游览器]')
     # 开始执行定时脚本 ⏭️
     time.sleep(6.5)
     def click_msg_button():
@@ -225,13 +225,13 @@ try:
 
     click_msg_button()
 
-    time.sleep(3)
+    time.sleep(6)
     friends_xpath = '//*[@id="island_b69f5"]/div/ul[2]/div/li/div/div/div[3]/div/div/div[1]/div/div[2]/div[2]/div'
     msg_main_list = driver.find_elements(By.XPATH, value=friends_xpath)
     # 创建字典存储好友名称和对应的 XPath
     friends_dict = {}
     print('\n⏭️ 好友列表:\n------------------')
-    for msg_len in range(1,len(msg_main_list)):
+    for msg_len in range(1,len(msg_main_list)+1):
         click_msg_button()
         friends_get = driver.find_element(By.XPATH, value=friends_xpath + f'[{msg_len}]/div/div/div[2]/div[1]/div')
         friends_text = friends_get.text
@@ -276,5 +276,4 @@ try:
         schedule.run_pending()
         time.sleep(1)
 finally:
-
     driver.quit()
