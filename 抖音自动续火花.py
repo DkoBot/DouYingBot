@@ -10,6 +10,8 @@ from datetime import datetime
 from tqdm import tqdm
 '''
 作者: https://github.com/DkoBot
+项目路径: https://github.com/DkoBot/DouYingBot
+
 配置:
     cookies_list : Cooke信息
     friends_list : 待续火花用户名
@@ -31,7 +33,7 @@ my_user = '@qq.com'  # 收件人邮箱账号
 
 
 
-service = Service(executable_path=r'C:\WebDriver\edge\msedgedriver.exe')
+service = Service(executable_path=r'C:\WebDriver\edge\msedgedriver.exe') #路径为WebDriver路径!
 options = webdriver.EdgeOptions()
 # 防封策略 勿动
 def unban_config():
@@ -274,4 +276,5 @@ try:
         schedule.run_pending()
         time.sleep(1)
 finally:
+
     driver.quit()
