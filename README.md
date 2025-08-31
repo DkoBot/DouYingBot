@@ -1,5 +1,5 @@
 **部署时需要先下载EdgeWebDriver,并将其以C:\WebDriver\edge\msedgedriver.exe目录存放**
-
+**EdgeWebDriver下载链接 [https://msedgewebdriverstorage.z22.web.core.windows.net/?form=MA13LH]**
 # 部署步骤:
 
 `1.将代码与环境部署到挂机电脑`
