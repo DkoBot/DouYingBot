@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 from email.utils import formataddr
 from datetime import datetime
 from tqdm import tqdm
+import configparser
 '''
 作者: https://github.com/DkoBot
 项目路径: https://github.com/DkoBot/DouYingBot
@@ -19,24 +20,40 @@ from tqdm import tqdm
     OFF_ON_ERROR_Email : 续火花异常邮箱告知
     
 '''
+print('正在读取配置....')
 # 基础配置
-cookies_list = []
-friends_list = ''
-OFF_ON_Aaiqky_TEXT = True
-OFF_ON_ERROR_Email = True
+config = configparser.ConfigParser(interpolation=None)
+config.read('config.ini',encoding='utf-8')
+cookies_list = config.get('DEFAULT', 'cookies_list', fallback='[]')
+cookies_list = eval(cookies_list)
 
-# 邮箱配置 [QQ邮箱]
-my_sender = '@qq.com'  # 填写发信人的邮箱账号
-my_pass = ''  # 发件人邮箱授权码
-my_user = '@qq.com'  # 收件人邮箱账号
-
-
+friends_list = config.get('DEFAULT', 'friends_list', fallback='')
+# OFF_ON_Aaiqky_TEXT
+OFF_ON_Aaiqky_TEXT = config.getboolean('DEFAULT', 'OFF_ON_Aaiqky_TEXT', fallback=True)
+# OFF_ON_ERROR_Email
+OFF_ON_ERROR_Email = config.getboolean('DEFAULT', 'OFF_ON_ERROR_Email', fallback=True)
+# my_sender
+my_sender = config.get('DEFAULT', 'my_sender', fallback='')
+# my_pass
+my_pass = config.get('DEFAULT', 'my_pass', fallback='')
+# my_user
+my_user = config.get('DEFAULT', 'my_user', fallback='')
+print('✅ 配置读取成功')
+OF_OFF_headless = input('是否可视游览器 [默认回车不显示]:')
+if OF_OFF_headless:
+    OF_OFF_headless = False
+else:
+    OF_OFF_headless = True
 
 
 service = Service(executable_path=r'C:\WebDriver\edge\msedgedriver.exe')
 options = webdriver.EdgeOptions()
 # 防封策略 勿动
 def unban_config():
+    if OF_OFF_headless:
+        options.add_argument("--headless")  # 启用无头模式
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    options.add_argument('log-level=3')
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.177 Safari/537.36")
     options.add_experimental_option('excludeSwitches', ['enable-automation', 'useAutomationExtension'])
     options.add_argument('--disable-blink-features=AutomationControlled')
@@ -48,6 +65,7 @@ def unban_config():
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--no-sandbox')
     options.add_argument('--start-maximized')
+    options.add_argument("--force-device-scale-factor=0.25")
 unban_config()
 driver = webdriver.Edge(service=service, options=options)
 def AiqingGongyu_text():
@@ -197,9 +215,87 @@ def Get_Cooke():
             print(f'✅ Cooke获取成功,您的Cooke为 [请完整复制到cookies_list变量中]:\n{cooke}')
             driver.close()
             exit()
+def format_time(time_str: str) -> str:
+    """
+    将时间字符串格式化为 HH:MM 格式
+    例如: "9:23" -> "09:23", "9:5" -> "09:05", "09:23" -> "09:23"
+    """
+    if not time_str:
+        return '22:00'
+
+    # 统一替换中文冒号
+    time_str = time_str.replace('：', ':').strip()
+
+    try:
+        # 分割小时和分钟
+        parts = time_str.split(':')
+        if len(parts) != 2:
+            print(f'⚠️ 时间格式错误，使用默认时间 22:00')
+            return '22:00'
+
+        hour = int(parts[0])
+        minute = int(parts[1])
+
+        # 验证范围
+        if not (0 <= hour <= 23 and 0 <= minute <= 59):
+            print(f'⚠️ 时间范围错误，使用默认时间 22:00')
+            return '22:00'
+
+        # 格式化为两位数字
+        return f"{hour:02d}:{minute:02d}"
+
+    except ValueError:
+        print(f'⚠️ 时间解析错误，使用默认时间 22:00')
+        return '22:00'
+class Douyin:
+    friends_xpath_list = {}
+    def __init__(self, driver):
+        self.driver = driver  # 将 driver 作为实例属性
+    def PrintfFrinder(self):
+
+        print(f'\n⏭️ 好友列表 共获取{len(self.friends_xpath_list)}位:\n------------------')
+        for index,value in self.friends_xpath_list.items():
+            print(index)
+        print('------------------')
+    def Updara_FrinderList(self):
+        friends_xpath = '//div[@class="conversationConversationListwrapper"]/div/div/div'
+        msg_main_list = driver.find_elements(By.XPATH,friends_xpath)
+        count = len(msg_main_list)
+        for msg_len in range(1, len(msg_main_list) + 1):
+            new_xpath = f'//div[@class="conversationConversationListwrapper"]/div/div[{msg_len+1}]/div[1]/div[2]/div[1]/div[1]'
+            friends_get = driver.find_element(By.XPATH, value=new_xpath)
+            friends_text = friends_get.text
+            self.friends_xpath_list[friends_text] = new_xpath
+        return count
+
+    def Send_Frinder(self,name:str,text:str):
+        count = self.Updara_FrinderList()
+        if count==0:
+            if OFF_ON_ERROR_Email:
+                Email_Send(str("⚠️ 更新好友列表失败!"))
+            print("⚠️ 更新好友列表失败!")
+        else:
+            try:
+                for index,value in self.friends_xpath_list.items():
+                    if index==name:
+                        friend_id = driver.find_element(By.XPATH, value=value)
+                        friend_id.click()
+                        time.sleep(1.5)
+                        seng = driver.find_element(By.XPATH, value='//div[@class="messageEditorimChatEditorContainer"]/div/div')
+                        seng.send_keys(text)
+                        seng.send_keys(Keys.ENTER)
+                        print(f'✅ {text} | 火花已续成功 续时间:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}')
+            except Exception as e:
+                print(f'⚠️ {text}  | 火花续异常:{e}')
+                if OFF_ON_ERROR_Email:
+                    Email_Send(str(e))
+
+
+
 
 try:
-    driver.get('https://www.douyin.com/')
+    driver.set_window_size(1400, 3200)
+    driver.get('https://www.douyin.com/chat?isPopup=1')
     if cookies_list:
         for cookie in tqdm(cookies_list, desc="Cooke载入中.."):
             driver.add_cookie(cookie)
@@ -217,60 +313,36 @@ try:
         exit()
     except NoSuchElementException:
         print('✅ Cooke有效,登录成功! [请勿操作游览器]')
+    douyin = Douyin(driver)
     # 开始执行定时脚本 ⏭️
-    time.sleep(6.5)
-    def click_msg_button():
-        msg_main_button = driver.find_element(By.XPATH, '//*[@id="island_b69f5"]/div/ul[2]')
-        msg_main_button.click()
-
-    click_msg_button()
-
-    time.sleep(6)
-    friends_xpath = '//*[@id="island_b69f5"]/div/ul[2]/div/li/div/div/div[3]/div/div/div[1]/div/div[2]/div[2]/div'
-    msg_main_list = driver.find_elements(By.XPATH, value=friends_xpath)
-    # 创建字典存储好友名称和对应的 XPath
-    friends_dict = {}
-    print('\n⏭️ 好友列表:\n------------------')
-    for msg_len in range(1,len(msg_main_list)+1):
-        click_msg_button()
-        friends_get = driver.find_element(By.XPATH, value=friends_xpath + f'[{msg_len}]/div/div/div[2]/div[1]/div')
-        friends_text = friends_get.text
-        print(friends_text)
-        friends_dict[friends_text] = friends_xpath + f'[{msg_len}]/div/div/div[2]/div[1]/div'
-    print('------------------')
-
-    if friends_list == '':
-        print('❓ 未选择续火花用户..')
-        friends_list = input('输入待续火花用户名称:')
-    for key,value in friends_dict.items():
-        if key==friends_list:
-            friend_id = driver.find_element(By.XPATH, value=value)
-            friend_id.click()
-            print(f'✅ 已选择待续火花用户 {key}')
+    time.sleep(7.5)
+    while True:
+        friends_count = Douyin.Updara_FrinderList(douyin)
+        if friends_count==0:
+            driver.refresh()
+            time.sleep(30.5)
+        if friends_count!=0:
             break
-        else:
-            continue
-    def send_message():
-        try:
-            time.sleep(2.5)
-            seng_get= driver.find_element(By.XPATH,'//*[@id="island_b69f5"]/div/ul[2]/div/li/div/div/div[3]/div/div/div[2]/div/div[3]/div/div[2]/div[1]/div[1]/div/div/div[2]/div/div/div')
-            if OFF_ON_Aaiqky_TEXT:
-                seng_get.send_keys(AiqingGongyu_text())
-            else:
-                seng_get.send_keys('我来续火花啦!')
-            seng_get.send_keys(Keys.ENTER)
-            print(f'✅ 火花已续成功 续时间:{datetime.today().strftime("%Y-%m-%d %H:%M:%S")}')
-        except Exception as e:
-            if OFF_ON_ERROR_Email:
-                print(f'⚠️ 火花续异常,将邮件通知管理员|{e}')
-                Email_Send(str(e))
-            else:
-                print(f'⚠️ 火花续异常:{e}')
-    play_time = input('🕰️ 输入每日续火花时间[默认为 22:00] :')
-    play_time = play_time.replace('：',':')
-    if play_time=='':
+    Douyin.PrintfFrinder(douyin)
+    if friends_list == '':
+        print('❓ 配置文件未选择续火花用户..')
+        friends_list = input("请输入待续火花用户名称(多个用户用分号';'分隔):")
+        friends_list = friends_list.split(';')
+    else:
+        print('配置文件已存在待续火花用户,已加载!')
+        friends_list = friends_list.split(';')
+    play_time = input('请输入每日续火花时间[默认为 22:00] :')
+    play_time = play_time.replace('：', ':')
+    if play_time == '':
         play_time = '22:00'
-    schedule.every().day.at(play_time).do(send_message)
+    play_time = format_time(play_time)
+    text = ""
+    if OFF_ON_Aaiqky_TEXT == False:
+        text = input('续火文本:')
+    for user in friends_list:
+        schedule.every().day.at(play_time).do(
+            lambda u=user: douyin.Send_Frinder(u, AiqingGongyu_text() if OFF_ON_Aaiqky_TEXT else text)
+        )
     print(f'已完成基础设置,开始固定执行续火花任务✅ [当前续火花时间: {play_time}]')
     while True:
         schedule.run_pending()
