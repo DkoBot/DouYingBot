@@ -5,6 +5,7 @@
 
 # 发布通知QQ群:
 - **QQ群**: 1061290461
+- **教程**: https://www.bilibili.com/video/BV1JSW5zUELT
 # 部署步骤[命令行版]:
 
 **部署时需要先下载EdgeWebDriver,并将其以C:\WebDriver\edge\msedgedriver.exe目录存放**
@@ -21,6 +22,8 @@
 
 `5.输入每天固定续火花时间即可`
 
+<img width="1506" height="1268" alt="image" src="https://github.com/user-attachments/assets/2f48d025-8274-4532-9312-7cc611d9b922" />
+
 **如需要Email错误邮件通知,请使用QQ邮箱打开SMTP服务并获取到邮箱授权码 在 # 邮箱配置 [QQ邮箱] 中修改相关配置项即可**
 
 **后续运行维护更新已停止,该项目打包非为最新版**
@@ -34,3 +37,5 @@
 `2.运行 抖音自动续火花-窗口版.exe `
 
 `3.按照步骤点击 下一步`
+
+<img width="851" height="469" alt="image" src="https://github.com/user-attachments/assets/c3e1f2a0-4d0f-4458-908d-7d7d14b98bf3" />
