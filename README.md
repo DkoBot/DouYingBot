@@ -3,6 +3,8 @@
 **重要提示**：本程序仅供个人学习和研究使用。请严格遵守相关法律法规，不得将本程序用于任何违法或侵权行为。如有任何侵权问题，请及时通过以下方式联系我：
 - **邮箱**：3595655855@qq.com
 
+# 此项目已停止维护最新版本已转移 https://github.com/DkoBot/TikTokAutoSparkWeb
+
 # 发布通知QQ群:
 - **QQ群**: 1061290461
 - **教程**: https://www.bilibili.com/video/BV1JSW5zUELT
